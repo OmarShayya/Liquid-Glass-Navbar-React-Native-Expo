@@ -19,6 +19,8 @@
 
 ## File Structure
 
+> **Layout note (post-Task-1):** the `create-expo-app` default template (SDK 56) uses a `src/` layout. Routes live in **`src/app/`** and the reusable component in **`src/components/liquid-glass-navbar/`** (`tsconfig` maps `@/*` → `./src/*`). `__tests__/` stays at repo root. The paths below are shown without the `src/` prefix for brevity — prepend `src/` to `app/` and `components/`.
+
 ```
 liquid-glass-navbar/
 ├── app/                                  # Expo Router routes (demo app)
