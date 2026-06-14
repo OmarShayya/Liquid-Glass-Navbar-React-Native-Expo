@@ -29,6 +29,20 @@ a username — scope assumed `@omarcshayya`, confirm before publish).
 - Clear README with install, peer deps, usage for all three exports, and a props reference.
 - Reuse existing, working units (`GlassSurface`, `useScrollShrink`, `haptics`) unchanged where possible.
 
+## Flexibility & ease-of-use requirements (consumer-facing)
+
+- **Any icons:** `TabDescriptor.icon` is a render prop `(active, color) => ReactNode` — consumers
+  pass Ionicons, custom SVG, `<Image>`, emoji, anything. The lib never hard-codes an icon set.
+- **Any number of tabs, including dynamic:** per-tab animated values are computed **inside each
+  `TabItem`** (one `useDerivedValue` per instance), never via a hooks-in-a-loop in the parent —
+  so changing the tab count at runtime cannot violate the Rules of Hooks. (Native iOS bar still
+  inherits Apple's/Material's own limits, e.g. Android caps native tabs at 5.)
+- **Light & dark out of the box:** `colorScheme: 'light' | 'dark' | 'system'` (default `system`
+  resolves via RN `useColorScheme()`). Default `inactiveColor` adapts to the resolved scheme
+  (light secondary vs dark secondary); `accentColor` defaults to iOS blue (legible in both).
+- **Minimal required props:** only `tabs`, `activeKey`, `onChange` are required; everything else
+  (colors, tint, scroll, gestures) has sensible defaults.
+
 ## Non-Goals
 
 - Authoring a native module (we depend on native modules but write none — JS-only library).
