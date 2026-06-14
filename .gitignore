@@ -1,3 +1,14 @@
+# Editor / AI / tooling
+.vscode/
+.idea/
+.claude/
+
+# Internal planning docs (kept locally, not pushed)
+docs/
+
+# Build output (published to npm via the files allowlist, not committed)
+lib/
+
 # Brainstorm visual-companion scratch files
 .superpowers/
 
