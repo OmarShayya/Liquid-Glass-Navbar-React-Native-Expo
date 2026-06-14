@@ -24,5 +24,6 @@
 export * from './types';
 export { LiquidGlassTabBar } from './LiquidGlassTabBar';
 export { NativeLiquidGlassTabBar } from './NativeLiquidGlassTabBar';
+export { LiquidGlassTabs } from './LiquidGlassTabs';
 export { GlassSurface } from './GlassSurface';
 export { useScrollShrink } from './useScrollShrink';
