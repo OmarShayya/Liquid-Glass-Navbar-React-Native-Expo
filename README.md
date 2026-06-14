@@ -1,56 +1,153 @@
-# Liquid Glass Tabs
+# @omarshayya/liquid-glass-tabs
 
 Apple **iOS 26 Liquid Glass** tab bars for **Expo & React Native** — the real native system
 tab bar on iOS, and a gesture-driven custom bar (elastic pill, Telegram-style icon tint,
 scroll-to-minimize) that looks the part on Android too.
 
-> 🚧 **Work in progress.** Built in the open. Not yet published to npm — packaging as
-> `@omarshayya/liquid-glass-tabs` is underway.
-
-## Why
-
-iOS 26 introduced Liquid Glass — the translucent, refractive material Apple, Telegram and Slack
-use for their tab bars. This library gives you two ways to get it:
-
-- **`NativeLiquidGlassTabBar`** — renders Apple's *actual* system tab bar via Expo Router, so on
-  iOS 26 you get the genuine Liquid Glass material and Apple's own animations (100% native).
-- **`LiquidGlassTabBar`** — a fully custom, controlled bar that recreates the look with
-  `expo-blur` + a native glass surface, and adds a gesture-driven elastic pill: **tap** to
-  switch, or **press-and-hold and drag** to fling the pill between tabs with a liquid
-  stretch-and-settle. Works on iOS and Android.
+```bash
+npm install @omarshayya/liquid-glass-tabs
+```
 
 ## Features
 
-- Real iOS 26 Liquid Glass on iOS (native), graceful blur-glass fallback elsewhere
-- Gesture-driven elastic pill: press-hold-drag, follow-finger, elastic deformation, haptics
-- Telegram-style icon tint that tracks the pill
-- Scroll-to-minimize (shrinks into a compact pill as you scroll)
-- Any icons (render-prop), any number of tabs, light & dark out of the box
+- **Real iOS 26 Liquid Glass** via Apple's own system tab bar (Expo Router `NativeTabs`)
+- **Gesture-driven custom bar** — tap to switch, or press-and-hold and drag the pill between
+  tabs with an elastic stretch-and-settle, crossing haptics, and a glass surface
+- **Telegram-style tint** that tracks the pill
+- **Scroll-to-minimize** (shrinks into a compact pill as you scroll)
+- **Any icons** (render-prop), **any number of tabs** (even dynamic), **light & dark** out of the box
 
-## Status / roadmap
-
-- [x] Native iOS Liquid Glass tab bar (Expo Router `NativeTabs`)
-- [x] Custom cross-platform glass bar (blur + native glass surface)
-- [x] Elastic pill + Telegram-style tint + scroll-minimize
-- [~] Press-hold-drag gesture engine
-- [ ] Expo Router auto-switch adapter (`LiquidGlassTabs`)
-- [ ] Package & publish to npm
-- [ ] Full API docs
-
-## Requirements
-
-- Expo SDK 54+ (built on SDK 56)
-- The genuine Liquid Glass material only renders on an **iOS 26 simulator/device built with
-  Xcode 26** — it does not appear in Expo Go. On older iOS / Android the custom bar falls back
-  to a blur-based glass.
-
-## Running the example
+## Install
 
 ```bash
-npm install
-npx expo run:ios   # iOS 26 simulator to see the real glass
-# or: npx expo start  → press i / a
+npm install @omarshayya/liquid-glass-tabs
+# peer dependencies (Expo):
+npx expo install react-native-reanimated react-native-gesture-handler react-native-worklets \
+  expo-blur expo-linear-gradient expo-glass-effect expo-haptics \
+  @react-native-masked-view/masked-view react-native-safe-area-context
+# expo-router is only needed for NativeLiquidGlassTabBar / LiquidGlassTabs
 ```
+
+Wrap your app root in `GestureHandlerRootView` (required for the gesture bar):
+
+```tsx
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+// <GestureHandlerRootView style={{ flex: 1 }}>...</GestureHandlerRootView>
+```
+
+## Which component?
+
+| Component | What it is | Platforms | Needs Expo Router |
+|---|---|---|---|
+| `LiquidGlassTabBar` | Controlled custom bar (gesture pill + tint + scroll-shrink) | iOS + Android | No |
+| `NativeLiquidGlassTabBar` | Apple's real iOS 26 system Liquid Glass tab bar | iOS (Android → Material) | Yes |
+| `LiquidGlassTabs` | Auto-switch: native bar on iOS, custom bar on Android | iOS + Android | Yes |
+
+## Usage
+
+### `LiquidGlassTabBar` (controlled, works anywhere)
+
+```tsx
+import { useState } from 'react';
+import { Ionicons } from '@expo/vector-icons';
+import { useSharedValue } from 'react-native-reanimated';
+import { LiquidGlassTabBar } from '@omarshayya/liquid-glass-tabs';
+
+const TABS = [
+  { key: 'home',   icon: (on, c) => <Ionicons name={on ? 'home' : 'home-outline'} size={24} color={c} /> },
+  { key: 'search', icon: (on, c) => <Ionicons name={on ? 'search' : 'search-outline'} size={24} color={c} /> },
+  { key: 'me',     icon: (on, c) => <Ionicons name={on ? 'person' : 'person-outline'} size={24} color={c} /> },
+];
+
+function Bar() {
+  const [active, setActive] = useState('home');
+  const scrollY = useSharedValue(0); // optional — enables scroll-to-minimize
+  return <LiquidGlassTabBar tabs={TABS} activeKey={active} onChange={setActive} scrollY={scrollY} />;
+}
+```
+
+### `NativeLiquidGlassTabBar` (real Apple bar) — in an Expo Router `app/(tabs)/_layout.tsx`
+
+```tsx
+import { NativeLiquidGlassTabBar } from '@omarshayya/liquid-glass-tabs';
+
+export default function TabsLayout() {
+  return (
+    <NativeLiquidGlassTabBar
+      minimizeBehavior="onScrollDown"
+      tabs={[
+        { name: 'index',   title: 'Home',    sf: 'house.fill',         md: 'home' },
+        { name: 'search',  title: 'Search',  sf: 'magnifyingglass',    md: 'search' },
+        { name: 'profile', title: 'Profile', sf: 'person.crop.circle', md: 'person' },
+      ]}
+    />
+  );
+}
+```
+
+### `LiquidGlassTabs` (auto-switch per platform) — in an Expo Router `_layout.tsx`
+
+```tsx
+import { Ionicons } from '@expo/vector-icons';
+import { LiquidGlassTabs } from '@omarshayya/liquid-glass-tabs';
+
+export default function Layout() {
+  return (
+    <LiquidGlassTabs
+      accentColor="#0A84FF"
+      nativeTabs={[
+        { name: 'index',  title: 'Home',   sf: 'house.fill',      md: 'home' },
+        { name: 'search', title: 'Search', sf: 'magnifyingglass', md: 'search' },
+      ]}
+      customTabs={[
+        { key: 'index',  icon: (on, c) => <Ionicons name={on ? 'home' : 'home-outline'} size={24} color={c} /> },
+        { key: 'search', icon: (on, c) => <Ionicons name={on ? 'search' : 'search-outline'} size={24} color={c} /> },
+      ]}
+    />
+  );
+}
+```
+
+## Props
+
+### `LiquidGlassTabBar`
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `tabs` | `{ key: string; icon: (active, color) => ReactNode }[]` | — | Tab list. `icon` is a render-prop — use any icon. |
+| `activeKey` | `string` | — | Key of the active tab. |
+| `onChange` | `(key: string) => void` | — | Called when a tab is selected. |
+| `scrollY` | `SharedValue<number>` | — | Optional. Drives scroll-to-minimize. |
+| `accentColor` | `string` | `#0A84FF` | Active icon + pill color. |
+| `inactiveColor` | `string` | auto (light/dark) | Inactive icon color. |
+| `tintColor` | `string` | — | Glass tint. |
+| `colorScheme` | `'light' \| 'dark' \| 'system'` | `system` | Forces glass/colors light or dark. |
+| `bottomInset` | `number` | `0` | Safe-area bottom padding. |
+| `enableGestures` | `boolean` | `true` | Press-hold-drag gesture on the pill. |
+
+### `NativeLiquidGlassTabBar`
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `tabs` | `{ name; title; sf; md }[]` | — | `name` matches the route file; `sf`/`md` are SF Symbol / Material icon names. |
+| `minimizeBehavior` | `'automatic' \| 'never' \| 'onScrollDown' \| 'onScrollUp'` | `onScrollDown` | Native scroll-minimize. |
+
+### `LiquidGlassTabs`
+
+| Prop | Type | Description |
+|---|---|---|
+| `nativeTabs` | `{ name; title; sf; md }[]` | iOS tab config. |
+| `customTabs` | `{ key; icon }[]` | Android tab config (keys match route names). |
+| `accentColor` | `string` | Android pill/accent color. |
+| `minimizeBehavior` | see above | iOS scroll-minimize. |
+
+## Requirements & notes
+
+- The **genuine Liquid Glass material** only renders on an **iOS 26 simulator/device built with
+  Xcode 26**. It does not appear in Expo Go. On older iOS / Android the custom bar falls back to
+  a blur-based glass; the native bar falls back to the standard system tab bar.
+- `NativeLiquidGlassTabBar` / `LiquidGlassTabs` require **Expo Router** (SDK 54+). Android caps
+  native tabs at 5.
 
 ## License
 
