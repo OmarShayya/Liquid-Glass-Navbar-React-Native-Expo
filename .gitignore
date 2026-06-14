@@ -1,0 +1,10 @@
+# Brainstorm visual-companion scratch files
+.superpowers/
+
+# Node / Expo (populated when the app is scaffolded)
+node_modules/
+.expo/
+dist/
+web-build/
+*.log
+.DS_Store
