@@ -1,4 +1,4 @@
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { StyleSheet, View, LayoutChangeEvent } from 'react-native';
 import Animated, {
   useAnimatedStyle,
@@ -14,6 +14,7 @@ import type { LiquidGlassTabBarProps } from './types';
 
 const H_PADDING = 6;
 const EXPANDED_HEIGHT = 64;
+const COMPACT_HEIGHT = 50;
 const PILL_HEIGHT = 44;
 
 export function LiquidGlassTabBar({
@@ -28,18 +29,21 @@ export function LiquidGlassTabBar({
   bottomInset = 0,
 }: LiquidGlassTabBarProps) {
   const [rowWidth, setRowWidth] = useState(0);
-  const centers = useRef<Record<string, number>>({});
   const pillCenter = useSharedValue(0);
+  // Each tab's measured center-x, kept in SharedValues so the proximity worklets read
+  // live values on the UI thread. (A useRef would be deep-frozen when captured by a
+  // worklet, so later onLayout writes would not propagate.)
+  const tabCenters = tabs.map(() => useSharedValue(-1));
 
   const activeIndex = Math.max(0, tabs.findIndex((t) => t.key === activeKey));
   const tabSlot = rowWidth > 0 ? rowWidth / tabs.length : 0;
   const targetCenterX = tabSlot * activeIndex + tabSlot / 2;
   const pillWidth = Math.max(44, tabSlot - 10);
 
-  const { compact } = useScrollShrink(scrollY, EXPANDED_HEIGHT);
+  const { compact, expandedHeight } = useScrollShrink(scrollY, EXPANDED_HEIGHT);
 
   const containerStyle = useAnimatedStyle(() => ({
-    height: compactInterpolate(compact.value, EXPANDED_HEIGHT, 50),
+    height: compactInterpolate(compact.value, expandedHeight, COMPACT_HEIGHT),
   }));
 
   const onRowLayout = useCallback((e: LayoutChangeEvent) => {
@@ -56,15 +60,16 @@ export function LiquidGlassTabBar({
     [activeKey, onChange]
   );
 
-  // proximity per tab: 1 when pill center is over the tab center, fading with distance.
-  const proximities = tabs.map((t) =>
-    useDerivedValue(() => {
-      const c = centers.current[t.key];
-      if (c == null || tabSlot === 0) return t.key === activeKey ? 1 : 0;
+  // proximity per tab: 1 when the live pill center is over the tab center, fading with distance.
+  const proximities = tabs.map((t, i) => {
+    const center = tabCenters[i];
+    return useDerivedValue(() => {
+      const c = center.value;
+      if (c < 0 || tabSlot === 0) return t.key === activeKey ? 1 : 0;
       const d = Math.abs(pillCenter.value - c);
       return Math.max(0, 1 - d / (tabSlot * 0.9));
-    }, [tabSlot, activeKey])
-  );
+    }, [tabSlot, activeKey]);
+  });
 
   return (
     <View style={[styles.wrap, { paddingBottom: bottomInset }]} pointerEvents="box-none">
@@ -94,7 +99,7 @@ export function LiquidGlassTabBar({
                 inactiveColor={inactiveColor}
                 onPress={() => handlePress(tab.key)}
                 onLayoutCenter={(cx) => {
-                  centers.current[tab.key] = cx;
+                  tabCenters[i].value = cx;
                 }}
               />
             ))}
@@ -116,16 +121,6 @@ function hexWithAlpha(hex: string, alpha: number): string {
 
 const styles = StyleSheet.create({
   wrap: { position: 'absolute', left: 0, right: 0, bottom: 0, alignItems: 'center' },
-  container: {
-    width: '92%',
-    marginBottom: 18,
-    borderRadius: 32,
-    overflow: 'visible',
-  },
-  row: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: H_PADDING,
-  },
+  container: { width: '92%', marginBottom: 18, borderRadius: 32, overflow: 'visible' },
+  row: { flex: 1, flexDirection: 'row', alignItems: 'center', paddingHorizontal: H_PADDING },
 });

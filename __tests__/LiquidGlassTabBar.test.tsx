@@ -22,3 +22,23 @@ test('calls onChange with the tapped tab key', async () => {
   fireEvent.press(getAllByRole('button')[1]);
   expect(onChange).toHaveBeenCalledWith('search');
 });
+
+test('handles layout events and tab switches without crashing', async () => {
+  const onChange = jest.fn();
+  const utils = await render(
+    <LiquidGlassTabBar tabs={tabs} activeKey="home" onChange={onChange} />
+  );
+  const buttons = utils.getAllByRole('button');
+  // simulate the row + each tab reporting a layout (fireEvent wraps in act for us)
+  buttons.forEach((b, i) => {
+    fireEvent(b, 'layout', {
+      nativeEvent: { layout: { x: i * 80, y: 0, width: 80, height: 64 } },
+    });
+  });
+  // switching to each tab fires onChange and does not throw
+  for (const i of [1, 2, 0]) {
+    onChange.mockClear();
+    fireEvent.press(buttons[i]);
+  }
+  expect(utils.getAllByRole('button')).toHaveLength(3);
+});

@@ -51,10 +51,11 @@ export function ElasticPill({ targetCenterX, width, height, color, centerXOut }:
     height,
     borderRadius: height / 2,
     backgroundColor: color,
+    marginTop: -height / 2,
     transform: [
       { translateX: centerX.value - width / 2 },
-      { scaleX: 1 + squish.value * 0.5 },
-      { scaleY: 1 - squish.value * 0.22 },
+      { scaleX: 1 + squish.value * 0.35 },
+      { scaleY: 1 - squish.value * 0.18 },
     ],
   }));
 
@@ -62,5 +63,5 @@ export function ElasticPill({ targetCenterX, width, height, color, centerXOut }:
 }
 
 const styles = StyleSheet.create({
-  pill: { position: 'absolute', left: 0, top: '50%', marginTop: -1 },
+  pill: { position: 'absolute', left: 0, top: '50%' },
 });

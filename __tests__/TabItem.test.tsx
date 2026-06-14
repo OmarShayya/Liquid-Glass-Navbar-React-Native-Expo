@@ -8,7 +8,7 @@ function Harness({ onPress }: { onPress: () => void }) {
   const proximity = useSharedValue(0);
   return (
     <TabItem
-      tab={{ key: 'home', label: 'Home', icon: (active, color) => <Text>{active ? 'on' : 'off'}:{color}</Text> }}
+      tab={{ key: 'home', icon: (active, color) => <Text>{active ? 'on' : 'off'}:{color}</Text> }}
       proximity={proximity}
       accentColor="#0A84FF"
       inactiveColor="#888"

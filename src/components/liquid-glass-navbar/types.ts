@@ -6,8 +6,6 @@ export type ColorSchemePref = 'light' | 'dark' | 'system';
 export interface TabDescriptor {
   /** Stable unique key, also used by onChange. */
   key: string;
-  /** Optional label under the icon. */
-  label?: string;
   /**
    * Render the icon. `active` lets you swap filled/outline variants;
    * `color` is the resolved tint for the current state.
