@@ -8,3 +8,22 @@ dist/
 web-build/
 *.log
 .DS_Store
+
+# Expo generated
+expo-env.d.ts
+*.tsbuildinfo
+.metro-health-check*
+
+# Native (generated native folders)
+ios/
+android/
+*.orig.*
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+
+# local env files
+.env*.local
+*.pem
