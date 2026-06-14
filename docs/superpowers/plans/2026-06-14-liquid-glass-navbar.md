@@ -6,7 +6,14 @@
 
 **Architecture:** Scaffold an Expo Router (TypeScript) app. The reusable component lives in `components/liquid-glass-navbar/` (copy-the-folder distribution). The custom bar is composed from small focused units: a `GlassSurface` (real `expo-glass-effect` on iOS 26+, `expo-blur` fallback elsewhere), an `ElasticPill` (Reanimated indicator that travels and squishes), `TabItem`s (cross-fade icon/label tint), and a `useScrollShrink` hook. The native bar is a thin wrapper over Expo Router `NativeTabs`.
 
-**Tech Stack:** Expo SDK 54+ (Expo Router), TypeScript, React Native Reanimated 4 (+ react-native-worklets), react-native-gesture-handler, expo-blur, expo-linear-gradient, expo-glass-effect, expo-haptics, jest-expo + @testing-library/react-native.
+**Tech Stack:** Expo SDK 54+ (Expo Router), TypeScript, React Native Reanimated 4 (+ react-native-worklets), react-native-gesture-handler, expo-blur, expo-linear-gradient, expo-glass-effect, @react-native-masked-view/masked-view, expo-haptics, jest-expo + @testing-library/react-native.
+
+## Reuse Strategy (licensing-aware)
+
+- **Native 100% Apple bar** → Expo Router `NativeTabs` (official, built into `expo-router`, properly licensed). It renders Apple's real `UITabBarController` liquid glass. No third-party code.
+- **Glass material** → official `expo-glass-effect` (iOS 26 native) with an `expo-blur` + `@react-native-masked-view/masked-view` gradient-border fallback (the masked 1px gradient ring is what makes the fallback look premium).
+- **Reference only (NOT copied):** `github.com/SchroederNathan/linear-tab-bar` has **no license** (all-rights-reserved). We re-implement two *standard techniques* it demonstrates — a masked gradient border and a damped elastic stretch — in our own code. Do **not** copy its files verbatim.
+- `@callstack/liquid-glass` (MIT) is an acceptable drop-in alternative to `expo-glass-effect` if the latter misbehaves; not required.
 
 ---
 
@@ -79,7 +86,7 @@ Expected: `app/` and `components/` are empty and ready for our files.
 ```bash
 npx expo install react-native-reanimated react-native-gesture-handler \
   react-native-worklets expo-blur expo-linear-gradient expo-glass-effect \
-  expo-haptics react-native-safe-area-context
+  expo-haptics react-native-safe-area-context @react-native-masked-view/masked-view
 ```
 
 Expected: all packages added to `package.json` with Expo-compatible versions.
@@ -315,6 +322,7 @@ import React from 'react';
 import { StyleSheet, View, ViewStyle, StyleProp } from 'react-native';
 import { BlurView } from 'expo-blur';
 import { LinearGradient } from 'expo-linear-gradient';
+import MaskedView from '@react-native-masked-view/masked-view';
 import { GlassView, isLiquidGlassAvailable } from 'expo-glass-effect';
 import type { ColorSchemePref } from './types';
 
@@ -363,17 +371,31 @@ export function GlassSurface({
       style={[{ borderRadius, overflow: 'hidden' }, styles.fallbackShadow, style]}
     >
       <BlurView intensity={50} tint={blurTint} style={StyleSheet.absoluteFill} />
+      {/* top highlight fill */}
       <LinearGradient
         colors={['rgba(255,255,255,0.55)', 'rgba(255,255,255,0.08)']}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 0, y: 1 }}
+        start={{ x: 0.5, y: 0 }}
+        end={{ x: 0.5, y: 1 }}
         style={StyleSheet.absoluteFill}
         pointerEvents="none"
       />
-      <View pointerEvents="none" style={[styles.hairline, { borderRadius }]} />
       {tintColor ? (
         <View pointerEvents="none" style={[StyleSheet.absoluteFill, { backgroundColor: tintColor }]} />
       ) : null}
+      {/* premium 1px gradient border: mask a vertical gradient to a 1px ring */}
+      <MaskedView
+        style={StyleSheet.absoluteFill}
+        pointerEvents="none"
+        maskElement={<View style={{ flex: 1, borderWidth: 1, borderColor: 'black', borderRadius }} />}
+      >
+        <LinearGradient
+          colors={['rgba(255,255,255,0.7)', 'rgba(255,255,255,0.05)', 'rgba(255,255,255,0.25)']}
+          start={{ x: 0.49, y: 0 }}
+          end={{ x: 0.51, y: 1 }}
+          locations={[0, 0.5, 1]}
+          style={{ flex: 1 }}
+        />
+      </MaskedView>
       {children}
     </View>
   );
@@ -386,11 +408,6 @@ const styles = StyleSheet.create({
     shadowRadius: 18,
     shadowOffset: { width: 0, height: 8 },
     elevation: 8,
-  },
-  hairline: {
-    ...StyleSheet.absoluteFillObject,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: 'rgba(255,255,255,0.6)',
   },
 });
 ```
