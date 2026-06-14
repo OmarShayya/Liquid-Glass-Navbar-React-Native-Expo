@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { StyleSheet } from 'react-native';
 import Animated, {
   useAnimatedStyle,
+  useDerivedValue,
   useSharedValue,
   withSpring,
   withSequence,
@@ -38,10 +39,11 @@ export function ElasticPill({ targetCenterX, width, height, color, centerXOut }:
     centerX.value = withSpring(targetCenterX, SPRING);
   }, [targetCenterX, centerX, squish]);
 
-  // keep parent's shared center in sync for proximity calc
-  useAnimatedStyle(() => {
+  // keep parent's shared center in sync for proximity calc.
+  // useDerivedValue runs reactively on the UI thread whenever centerX changes,
+  // independent of view attachment (unlike a side-effecting useAnimatedStyle).
+  useDerivedValue(() => {
     centerXOut.value = centerX.value;
-    return {};
   });
 
   const style = useAnimatedStyle(() => ({
