@@ -3,7 +3,7 @@ import { StyleSheet, Text, View } from 'react-native';
 import Animated, { useAnimatedScrollHandler, useSharedValue } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { LiquidGlassTabBar } from '../components/liquid-glass-navbar';
+import { LiquidGlassTabBar } from '@omarshayya/liquid-glass-tabs';
 
 const TABS = [
   { key: 'home',   icon: (a: boolean, c: string) => <Ionicons name={a ? 'home' : 'home-outline'} size={24} color={c} /> },

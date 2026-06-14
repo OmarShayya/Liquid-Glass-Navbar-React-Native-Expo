@@ -1,4 +1,4 @@
-import { hoveredIndexFromX, clamp, liquidGlassTransform } from '../src/components/liquid-glass-navbar/liquidGlass';
+import { hoveredIndexFromX, clamp, liquidGlassTransform } from '../../src/liquidGlass';
 
 test('hoveredIndexFromX maps x to the right slot, -1 when out of range', () => {
   expect(hoveredIndexFromX(50, 300, 3)).toBe(0);

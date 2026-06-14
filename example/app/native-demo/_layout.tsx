@@ -1,4 +1,4 @@
-import { NativeLiquidGlassTabBar } from '../../components/liquid-glass-navbar';
+import { NativeLiquidGlassTabBar } from '@omarshayya/liquid-glass-tabs';
 
 export default function NativeDemoLayout() {
   return (

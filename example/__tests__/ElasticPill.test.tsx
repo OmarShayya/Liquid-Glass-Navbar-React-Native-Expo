@@ -1,7 +1,7 @@
 import React from 'react';
 import { render } from '@testing-library/react-native';
 import { useSharedValue } from 'react-native-reanimated';
-import { ElasticPill } from '../src/components/liquid-glass-navbar/ElasticPill';
+import { ElasticPill } from '../../src/ElasticPill';
 
 function Harness() {
   const out = useSharedValue(0);

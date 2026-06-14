@@ -1,6 +1,6 @@
 import { renderHook, act } from '@testing-library/react-native';
 import { useSharedValue } from 'react-native-reanimated';
-import { useScrollShrink } from '../src/components/liquid-glass-navbar/useScrollShrink';
+import { useScrollShrink } from '../../src/useScrollShrink';
 
 // Notes on the test environment:
 // - @testing-library/react-native v14's `renderHook` is async (it returns a

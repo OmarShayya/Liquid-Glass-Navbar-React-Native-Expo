@@ -2,7 +2,7 @@ import React from 'react';
 import { render, fireEvent } from '@testing-library/react-native';
 import { Text } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { LiquidGlassTabBar } from '../src/components/liquid-glass-navbar/LiquidGlassTabBar';
+import { LiquidGlassTabBar } from '../../src/LiquidGlassTabBar';
 
 jest.mock('expo-glass-effect', () => ({
   isLiquidGlassAvailable: () => false,

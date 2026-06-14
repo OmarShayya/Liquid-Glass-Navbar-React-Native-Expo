@@ -7,7 +7,7 @@ jest.mock('expo-glass-effect', () => ({
   GlassView: () => null,
 }));
 
-import { GlassSurface } from '../src/components/liquid-glass-navbar/GlassSurface';
+import { GlassSurface } from '../../src/GlassSurface';
 
 test('renders children and falls back to blur when native glass unavailable', async () => {
   const { getByText, getByTestId } = await render(

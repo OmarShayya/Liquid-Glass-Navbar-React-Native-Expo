@@ -2,7 +2,7 @@ import React from 'react';
 import { render, fireEvent } from '@testing-library/react-native';
 import { Text } from 'react-native';
 import { useSharedValue } from 'react-native-reanimated';
-import { TabItem } from '../src/components/liquid-glass-navbar/TabItem';
+import { TabItem } from '../../src/TabItem';
 
 function Harness({ onPress }: { onPress: () => void }) {
   const pillCenter = useSharedValue(0);
