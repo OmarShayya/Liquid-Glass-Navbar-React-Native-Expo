@@ -1,6 +1,7 @@
 import React from 'react';
 import { render, fireEvent } from '@testing-library/react-native';
 import { Text } from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { LiquidGlassTabBar } from '../src/components/liquid-glass-navbar/LiquidGlassTabBar';
 
 jest.mock('expo-glass-effect', () => ({
@@ -17,7 +18,9 @@ const tabs = [
 test('calls onChange with the tapped tab key', async () => {
   const onChange = jest.fn();
   const { getAllByRole } = await render(
-    <LiquidGlassTabBar tabs={tabs} activeKey="home" onChange={onChange} />
+    <GestureHandlerRootView>
+      <LiquidGlassTabBar tabs={tabs} activeKey="home" onChange={onChange} />
+    </GestureHandlerRootView>
   );
   fireEvent.press(getAllByRole('button')[1]);
   expect(onChange).toHaveBeenCalledWith('search');
@@ -26,7 +29,9 @@ test('calls onChange with the tapped tab key', async () => {
 test('handles layout events and tab switches without crashing', async () => {
   const onChange = jest.fn();
   const utils = await render(
-    <LiquidGlassTabBar tabs={tabs} activeKey="home" onChange={onChange} />
+    <GestureHandlerRootView>
+      <LiquidGlassTabBar tabs={tabs} activeKey="home" onChange={onChange} />
+    </GestureHandlerRootView>
   );
   const buttons = utils.getAllByRole('button');
   // simulate the row + each tab reporting a layout (fireEvent wraps in act for us)

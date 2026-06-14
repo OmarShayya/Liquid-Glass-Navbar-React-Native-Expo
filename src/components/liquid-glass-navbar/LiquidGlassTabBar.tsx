@@ -1,13 +1,12 @@
 import React, { useCallback, useState } from 'react';
-import { StyleSheet, View, LayoutChangeEvent } from 'react-native';
-import Animated, {
-  useAnimatedStyle,
-  useSharedValue,
-} from 'react-native-reanimated';
+import { StyleSheet, View, LayoutChangeEvent, useColorScheme } from 'react-native';
+import Animated, { useAnimatedStyle, useSharedValue } from 'react-native-reanimated';
+import { GestureDetector } from 'react-native-gesture-handler';
 import { GlassSurface } from './GlassSurface';
 import { ElasticPill } from './ElasticPill';
 import { TabItem } from './TabItem';
 import { useScrollShrink, compactInterpolate } from './useScrollShrink';
+import { useTabBarGestures } from './useTabBarGestures';
 import { tabSelectionHaptic } from './haptics';
 import type { LiquidGlassTabBarProps } from './types';
 
@@ -22,16 +21,20 @@ export function LiquidGlassTabBar({
   onChange,
   scrollY,
   accentColor = '#0A84FF',
-  inactiveColor = 'rgba(60,60,67,0.6)',
+  inactiveColor,
   tintColor,
   colorScheme = 'system',
   bottomInset = 0,
+  enableGestures = true,
 }: LiquidGlassTabBarProps) {
   const [rowWidth, setRowWidth] = useState(0);
-  const pillCenter = useSharedValue(0);
-  // Index hovered by an active drag, or -1 when not dragging. There is no drag gesture in
-  // this configuration, so it rests at -1 and TabItems fall back to proximity tinting.
-  const hoveredIndex = useSharedValue(-1);
+  const liveCenter = useSharedValue(0); // published by ElasticPill (gesture or resting spring)
+
+  // Resolve light/dark so default colors look right with zero config.
+  const systemScheme = useColorScheme();
+  const effectiveScheme = colorScheme === 'system' ? (systemScheme ?? 'light') : colorScheme;
+  const resolvedInactive =
+    inactiveColor ?? (effectiveScheme === 'dark' ? 'rgba(235,235,245,0.6)' : 'rgba(60,60,67,0.6)');
 
   const activeIndex = Math.max(0, tabs.findIndex((t) => t.key === activeKey));
   const tabSlot = rowWidth > 0 ? rowWidth / tabs.length : 0;
@@ -39,7 +42,6 @@ export function LiquidGlassTabBar({
   const pillWidth = Math.max(44, tabSlot - 10);
 
   const { compact, expandedHeight } = useScrollShrink(scrollY, EXPANDED_HEIGHT);
-
   const containerStyle = useAnimatedStyle(() => ({
     height: compactInterpolate(compact.value, expandedHeight, COMPACT_HEIGHT),
   }));
@@ -48,57 +50,68 @@ export function LiquidGlassTabBar({
     setRowWidth(e.nativeEvent.layout.width);
   }, []);
 
-  const handlePress = useCallback(
-    (key: string) => {
-      if (key !== activeKey) {
+  const commitIndex = useCallback(
+    (i: number) => {
+      const tab = tabs[i];
+      if (tab && tab.key !== activeKey) {
         tabSelectionHaptic();
-        onChange(key);
+        onChange(tab.key);
       }
     },
-    [activeKey, onChange]
+    [tabs, activeKey, onChange]
+  );
+
+  const { pillCenter, pressed, overflowX, stretch, hoveredIndex, gesture } = useTabBarGestures({
+    rowWidth,
+    count: tabs.length,
+    activeIndex,
+    onCommit: commitIndex,
+    enabled: enableGestures && rowWidth > 0,
+  });
+
+  const row = (
+    <View style={styles.row} onLayout={onRowLayout}>
+      {rowWidth > 0 && (
+        <ElasticPill
+          targetCenterX={targetCenterX}
+          width={pillWidth}
+          height={PILL_HEIGHT}
+          color={hexWithAlpha(accentColor, 0.18)}
+          centerXOut={liveCenter}
+          pillCenter={enableGestures ? pillCenter : undefined}
+          pressed={enableGestures ? pressed : undefined}
+          overflowX={enableGestures ? overflowX : undefined}
+          stretch={enableGestures ? stretch : undefined}
+        />
+      )}
+      {tabs.map((tab, i) => (
+        <TabItem
+          key={tab.key}
+          tab={tab}
+          index={i}
+          count={tabs.length}
+          rowWidth={rowWidth}
+          pillCenter={liveCenter}
+          hoveredIndex={hoveredIndex}
+          accentColor={accentColor}
+          inactiveColor={resolvedInactive}
+          onPress={() => commitIndex(i)}
+        />
+      ))}
+    </View>
   );
 
   return (
     <View style={[styles.wrap, { paddingBottom: bottomInset }]} pointerEvents="box-none">
       <Animated.View style={[styles.container, containerStyle]}>
-        <GlassSurface
-          borderRadius={32}
-          tintColor={tintColor}
-          colorScheme={colorScheme}
-          style={StyleSheet.absoluteFill}
-        >
-          <View style={styles.row} onLayout={onRowLayout}>
-            {rowWidth > 0 && (
-              <ElasticPill
-                targetCenterX={targetCenterX}
-                width={pillWidth}
-                height={PILL_HEIGHT}
-                color={hexWithAlpha(accentColor, 0.18)}
-                centerXOut={pillCenter}
-              />
-            )}
-            {tabs.map((tab, i) => (
-              <TabItem
-                key={tab.key}
-                tab={tab}
-                index={i}
-                count={tabs.length}
-                rowWidth={rowWidth}
-                pillCenter={pillCenter}
-                hoveredIndex={hoveredIndex}
-                accentColor={accentColor}
-                inactiveColor={inactiveColor}
-                onPress={() => handlePress(tab.key)}
-              />
-            ))}
-          </View>
+        <GlassSurface borderRadius={32} tintColor={tintColor} colorScheme={colorScheme} style={StyleSheet.absoluteFill}>
+          {enableGestures ? <GestureDetector gesture={gesture}>{row}</GestureDetector> : row}
         </GlassSurface>
       </Animated.View>
     </View>
   );
 }
 
-/** Add alpha to a #RRGGBB color (used to make a translucent pill from the accent). */
 function hexWithAlpha(hex: string, alpha: number): string {
   if (!hex.startsWith('#') || hex.length < 7) return hex;
   const r = parseInt(hex.slice(1, 3), 16);

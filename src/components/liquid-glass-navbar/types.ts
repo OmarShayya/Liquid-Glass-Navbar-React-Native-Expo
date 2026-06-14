@@ -28,6 +28,8 @@ export interface LiquidGlassTabBarProps {
   colorScheme?: ColorSchemePref;
   /** Bottom inset (e.g. safe area). Default 0. */
   bottomInset?: number;
+  /** Enable press-hold-drag gesture on the pill (default true). */
+  enableGestures?: boolean;
 }
 
 export interface NativeTabDescriptor {
