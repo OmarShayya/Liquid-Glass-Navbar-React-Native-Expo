@@ -25,9 +25,9 @@ export function useScrollShrink(
 ): ScrollShrink {
   const fallback = useSharedValue(0);
 
-  const compact = useDerivedValue(() => {
+  const compact = useDerivedValue<number>(() => {
     if (!scrollY) return 0;
-    const target = scrollY.value > threshold ? 1 : 0;
+    const target: number = scrollY.value > threshold ? 1 : 0;
     return withTiming(target, { duration: 220 });
   }, [scrollY, threshold]);
 
