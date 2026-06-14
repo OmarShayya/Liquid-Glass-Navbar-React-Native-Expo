@@ -8,3 +8,12 @@ export function tabSelectionHaptic(): void {
     // haptics unavailable (web / unsupported device) — ignore
   }
 }
+
+/** A light tick as the dragged pill crosses into a new tab. No-ops if unsupported. */
+export function tabCrossingHaptic(): void {
+  try {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+  } catch {
+    // unsupported — ignore
+  }
+}
