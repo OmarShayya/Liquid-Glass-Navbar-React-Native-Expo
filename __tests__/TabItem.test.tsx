@@ -5,15 +5,19 @@ import { useSharedValue } from 'react-native-reanimated';
 import { TabItem } from '../src/components/liquid-glass-navbar/TabItem';
 
 function Harness({ onPress }: { onPress: () => void }) {
-  const proximity = useSharedValue(0);
+  const pillCenter = useSharedValue(0);
+  const hoveredIndex = useSharedValue(-1);
   return (
     <TabItem
       tab={{ key: 'home', icon: (active, color) => <Text>{active ? 'on' : 'off'}:{color}</Text> }}
-      proximity={proximity}
+      index={0}
+      count={3}
+      rowWidth={300}
+      pillCenter={pillCenter}
+      hoveredIndex={hoveredIndex}
       accentColor="#0A84FF"
       inactiveColor="#888"
       onPress={onPress}
-      onLayoutCenter={() => {}}
     />
   );
 }

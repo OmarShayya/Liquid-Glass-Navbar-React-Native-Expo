@@ -2,7 +2,6 @@ import React, { useCallback, useState } from 'react';
 import { StyleSheet, View, LayoutChangeEvent } from 'react-native';
 import Animated, {
   useAnimatedStyle,
-  useDerivedValue,
   useSharedValue,
 } from 'react-native-reanimated';
 import { GlassSurface } from './GlassSurface';
@@ -30,10 +29,9 @@ export function LiquidGlassTabBar({
 }: LiquidGlassTabBarProps) {
   const [rowWidth, setRowWidth] = useState(0);
   const pillCenter = useSharedValue(0);
-  // Each tab's measured center-x, kept in SharedValues so the proximity worklets read
-  // live values on the UI thread. (A useRef would be deep-frozen when captured by a
-  // worklet, so later onLayout writes would not propagate.)
-  const tabCenters = tabs.map(() => useSharedValue(-1));
+  // Index hovered by an active drag, or -1 when not dragging. There is no drag gesture in
+  // this configuration, so it rests at -1 and TabItems fall back to proximity tinting.
+  const hoveredIndex = useSharedValue(-1);
 
   const activeIndex = Math.max(0, tabs.findIndex((t) => t.key === activeKey));
   const tabSlot = rowWidth > 0 ? rowWidth / tabs.length : 0;
@@ -60,17 +58,6 @@ export function LiquidGlassTabBar({
     [activeKey, onChange]
   );
 
-  // proximity per tab: 1 when the live pill center is over the tab center, fading with distance.
-  const proximities = tabs.map((t, i) => {
-    const center = tabCenters[i];
-    return useDerivedValue(() => {
-      const c = center.value;
-      if (c < 0 || tabSlot === 0) return t.key === activeKey ? 1 : 0;
-      const d = Math.abs(pillCenter.value - c);
-      return Math.max(0, 1 - d / (tabSlot * 0.9));
-    }, [tabSlot, activeKey]);
-  });
-
   return (
     <View style={[styles.wrap, { paddingBottom: bottomInset }]} pointerEvents="box-none">
       <Animated.View style={[styles.container, containerStyle]}>
@@ -94,13 +81,14 @@ export function LiquidGlassTabBar({
               <TabItem
                 key={tab.key}
                 tab={tab}
-                proximity={proximities[i]}
+                index={i}
+                count={tabs.length}
+                rowWidth={rowWidth}
+                pillCenter={pillCenter}
+                hoveredIndex={hoveredIndex}
                 accentColor={accentColor}
                 inactiveColor={inactiveColor}
                 onPress={() => handlePress(tab.key)}
-                onLayoutCenter={(cx) => {
-                  tabCenters[i].value = cx;
-                }}
               />
             ))}
           </View>

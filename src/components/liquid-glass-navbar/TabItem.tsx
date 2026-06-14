@@ -1,7 +1,8 @@
-import React, { useCallback } from 'react';
-import { Pressable, StyleSheet, View, LayoutChangeEvent } from 'react-native';
+import React from 'react';
+import { Pressable, StyleSheet, View } from 'react-native';
 import Animated, {
   useAnimatedStyle,
+  useDerivedValue,
   useSharedValue,
   withTiming,
   type SharedValue,
@@ -10,34 +11,44 @@ import type { TabDescriptor } from './types';
 
 interface Props {
   tab: TabDescriptor;
-  /** 0..1 — how centered the moving pill is over this tab. */
-  proximity: SharedValue<number>;
+  index: number;
+  /** Tab count + row width define this tab's uniform slot center. */
+  count: number;
+  rowWidth: number;
+  /** Live pill center-x (resting spring or gesture). */
+  pillCenter: SharedValue<number>;
+  /** Index hovered by an active drag, or -1 when not dragging. */
+  hoveredIndex: SharedValue<number>;
   accentColor: string;
   inactiveColor: string;
   onPress: () => void;
-  /** Reports this tab's horizontal center (relative to the row) once laid out. */
-  onLayoutCenter: (centerX: number) => void;
 }
 
-export function TabItem({ tab, proximity, accentColor, inactiveColor, onPress, onLayoutCenter }: Props) {
+/**
+ * Tint strength is computed PER INSTANCE (one useDerivedValue here, not a hooks-in-a-loop in
+ * the parent) so the tab count can be any size — even change at runtime — without breaking the
+ * Rules of Hooks.
+ */
+export function TabItem({
+  tab, index, count, rowWidth, pillCenter, hoveredIndex, accentColor, inactiveColor, onPress,
+}: Props) {
   const pressScale = useSharedValue(1);
 
-  const onLayout = useCallback(
-    (e: LayoutChangeEvent) => {
-      const { x, width } = e.nativeEvent.layout;
-      onLayoutCenter(x + width / 2);
-    },
-    [onLayoutCenter]
-  );
+  const tint = useDerivedValue(() => {
+    if (hoveredIndex.value >= 0) return hoveredIndex.value === index ? 1 : 0;
+    if (count <= 0 || rowWidth <= 0) return 0;
+    const slot = rowWidth / count;
+    const center = slot * index + slot / 2;
+    return Math.max(0, 1 - Math.abs(pillCenter.value - center) / (slot * 0.9));
+  });
 
-  const activeLayer = useAnimatedStyle(() => ({ opacity: proximity.value }));
-  const inactiveLayer = useAnimatedStyle(() => ({ opacity: 1 - proximity.value }));
+  const activeLayer = useAnimatedStyle(() => ({ opacity: tint.value }));
+  const inactiveLayer = useAnimatedStyle(() => ({ opacity: 1 - tint.value }));
   const scaleStyle = useAnimatedStyle(() => ({ transform: [{ scale: pressScale.value }] }));
 
   return (
     <Pressable
       accessibilityRole="button"
-      onLayout={onLayout}
       onPressIn={() => (pressScale.value = withTiming(0.86, { duration: 90 }))}
       onPressOut={() => (pressScale.value = withTiming(1, { duration: 140 }))}
       onPress={onPress}

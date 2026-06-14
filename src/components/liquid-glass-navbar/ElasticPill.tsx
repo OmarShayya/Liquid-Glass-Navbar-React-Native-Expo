@@ -9,55 +9,68 @@ import Animated, {
   withTiming,
   type SharedValue,
 } from 'react-native-reanimated';
+import { liquidGlassTransform, SPRING } from './liquidGlass';
 
 interface Props {
-  /** Target center-x of the active tab, in row coordinates. */
   targetCenterX: number;
   width: number;
   height: number;
   color: string;
-  /** Shared output: live pill center-x, consumed by TabItems for proximity. */
+  /** Live pill center-x output (consumed by TabItems for proximity). */
   centerXOut: SharedValue<number>;
+  /** Optional gesture inputs. When provided, the pill follows them. */
+  pillCenter?: SharedValue<number>;
+  pressed?: SharedValue<number>;
+  overflowX?: SharedValue<number>;
+  stretch?: SharedValue<number>;
 }
 
-const SPRING = { damping: 14, stiffness: 180, mass: 0.9 } as const;
-
-/**
- * Pill that springs toward the active tab and squishes (stretch in X, compress in Y)
- * during travel, then relaxes — the "liquid" feel.
- */
-export function ElasticPill({ targetCenterX, width, height, color, centerXOut }: Props) {
-  const centerX = useSharedValue(targetCenterX);
-  const squish = useSharedValue(0); // 0 rest .. 1 mid-travel
+export function ElasticPill({
+  targetCenterX,
+  width,
+  height,
+  color,
+  centerXOut,
+  pillCenter,
+  pressed,
+  overflowX,
+  stretch,
+}: Props) {
+  // Internal spring position used only when there is no external gesture position.
+  const selfCenter = useSharedValue(targetCenterX);
+  const squish = useSharedValue(0);
 
   useEffect(() => {
-    // squish out then back while the spring travels
-    squish.value = withSequence(
-      withTiming(1, { duration: 130 }),
-      withTiming(0, { duration: 240 })
-    );
-    centerX.value = withSpring(targetCenterX, SPRING);
-  }, [targetCenterX, centerX, squish]);
+    if (pillCenter) return; // gesture owns position
+    squish.value = withSequence(withTiming(1, { duration: 130 }), withTiming(0, { duration: 240 }));
+    selfCenter.value = withSpring(targetCenterX, SPRING);
+  }, [targetCenterX, pillCenter, selfCenter, squish]);
 
-  // keep parent's shared center in sync for proximity calc.
-  // useDerivedValue runs reactively on the UI thread whenever centerX changes,
-  // independent of view attachment (unlike a side-effecting useAnimatedStyle).
+  // Publish the live center (gesture position if present, else internal spring).
   useDerivedValue(() => {
-    centerXOut.value = centerX.value;
+    centerXOut.value = pillCenter ? pillCenter.value : selfCenter.value;
   });
 
-  const style = useAnimatedStyle(() => ({
-    width,
-    height,
-    borderRadius: height / 2,
-    backgroundColor: color,
-    marginTop: -height / 2,
-    transform: [
-      { translateX: centerX.value - width / 2 },
-      { scaleX: 1 + squish.value * 0.35 },
-      { scaleY: 1 - squish.value * 0.18 },
-    ],
-  }));
+  const style = useAnimatedStyle(() => {
+    const cx = pillCenter ? pillCenter.value : selfCenter.value;
+    const p = pressed ? pressed.value : 0;
+    const ov = overflowX ? overflowX.value : 0;
+    const st = stretch ? stretch.value : 0;
+    const t = liquidGlassTransform(p, ov, width / 2);
+    const seq = squish.value;
+    return {
+      width,
+      height,
+      borderRadius: height / 2,
+      backgroundColor: color,
+      marginTop: -height / 2,
+      transform: [
+        { translateX: cx - width / 2 + t.translateX },
+        { scaleX: t.scaleX * (1 + st + seq * 0.5) },
+        { scaleY: t.scaleY * (1 - seq * 0.18) },
+      ],
+    };
+  });
 
   return <Animated.View pointerEvents="none" style={[styles.pill, style]} />;
 }
