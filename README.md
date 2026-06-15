@@ -8,6 +8,15 @@ scroll-to-minimize) that looks the part on Android too.
 npm install @omarshayya/liquid-glass-tabs
 ```
 
+## Demo
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/OmarShayya/Liquid-Glass-Navbar-React-Native-Expo/main/media/demo.gif" alt="Liquid Glass Tabs demo" width="320" />
+</p>
+
+> Drop a screen recording at `media/demo.gif` in the repo and it renders here (and on npm).
+> Tip: record the press-hold-drag on the custom bar and the iOS 26 native glass side by side.
+
 ## Features
 
 - **Real iOS 26 Liquid Glass** via Apple's own system tab bar (Expo Router `NativeTabs`)
@@ -66,6 +75,50 @@ function Bar() {
 }
 ```
 
+### Animated icons (selected-state animations)
+
+The `icon` render-prop receives `(active, color, progress)`. There are two ways to animate the
+icon when its tab is selected — like Telegram's icons that react on tap:
+
+**1. One-shot on select** — trigger an animation when `active` flips (great for Lottie, e.g. a
+phone that "rings" on select):
+
+```tsx
+import LottieView from 'lottie-react-native';
+import { useRef, useEffect } from 'react';
+
+function RingingPhone({ active, color }: { active: boolean; color: string }) {
+  const ref = useRef<LottieView>(null);
+  useEffect(() => { if (active) ref.current?.play(); }, [active]);
+  return <LottieView ref={ref} source={require('./phone.json')} loop={false} style={{ width: 26, height: 26 }} colorFilters={[{ keypath: '*', color }]} />;
+}
+
+const TABS = [
+  { key: 'calls', icon: (active, color) => <RingingPhone active={active} color={color} /> },
+  // ...
+];
+```
+
+**2. Progress-driven** — drive a smooth Reanimated animation off `progress` (0→1 as the pill
+arrives), e.g. a heart that scales up when selected:
+
+```tsx
+import Animated, { useAnimatedStyle, type SharedValue } from 'react-native-reanimated';
+import { Ionicons } from '@expo/vector-icons';
+
+function PulseHeart({ active, color, progress }: { active: boolean; color: string; progress: SharedValue<number> }) {
+  const style = useAnimatedStyle(() => ({ transform: [{ scale: 1 + progress.value * 0.25 }] }));
+  return <Animated.View style={style}><Ionicons name={active ? 'heart' : 'heart-outline'} size={24} color={color} /></Animated.View>;
+}
+
+const TABS = [
+  { key: 'liked', icon: (active, color, progress) => <PulseHeart active={active} color={color} progress={progress} /> },
+  // ...
+];
+```
+
+Plain icons that ignore the extra args keep working — animation is fully opt-in.
+
 ### `NativeLiquidGlassTabBar` (real Apple bar) — in an Expo Router `app/(tabs)/_layout.tsx`
 
 ```tsx
@@ -114,7 +167,7 @@ export default function Layout() {
 
 | Prop | Type | Default | Description |
 |---|---|---|---|
-| `tabs` | `{ key: string; icon: (active, color) => ReactNode }[]` | — | Tab list. `icon` is a render-prop — use any icon. |
+| `tabs` | `{ key: string; icon: (active, color, progress) => ReactNode }[]` | — | Tab list. `icon` is a render-prop — use any icon. `progress` (0→1 shared value) lets you animate the icon on select (see [Animated icons](#animated-icons-selected-state-animations)). |
 | `activeKey` | `string` | — | Key of the active tab. |
 | `onChange` | `(key: string) => void` | — | Called when a tab is selected. |
 | `scrollY` | `SharedValue<number>` | — | Optional. Drives scroll-to-minimize. |

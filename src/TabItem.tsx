@@ -56,9 +56,9 @@ export function TabItem({
     >
       <Animated.View style={scaleStyle}>
         <View style={styles.iconStack}>
-          <Animated.View style={inactiveLayer}>{tab.icon(false, inactiveColor)}</Animated.View>
+          <Animated.View style={inactiveLayer}>{tab.icon(false, inactiveColor, tint)}</Animated.View>
           <Animated.View style={[StyleSheet.absoluteFill, styles.center, activeLayer]}>
-            {tab.icon(true, accentColor)}
+            {tab.icon(true, accentColor, tint)}
           </Animated.View>
         </View>
       </Animated.View>

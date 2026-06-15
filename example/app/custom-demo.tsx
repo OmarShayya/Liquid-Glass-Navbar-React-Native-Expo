@@ -1,14 +1,31 @@
 import { useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import Animated, { useAnimatedScrollHandler, useSharedValue } from 'react-native-reanimated';
+import Animated, {
+  useAnimatedScrollHandler,
+  useAnimatedStyle,
+  useSharedValue,
+  type SharedValue,
+} from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { LiquidGlassTabBar } from '@omarshayya/liquid-glass-tabs';
 
+// Progress-driven animated icon: scales up + tilts as the tab becomes selected.
+function AnimatedHeart({ active, color, progress }: { active: boolean; color: string; progress: SharedValue<number> }) {
+  const style = useAnimatedStyle(() => ({
+    transform: [{ scale: 1 + progress.value * 0.3 }, { rotate: `${progress.value * 12}deg` }],
+  }));
+  return (
+    <Animated.View style={style}>
+      <Ionicons name={active ? 'heart' : 'heart-outline'} size={24} color={color} />
+    </Animated.View>
+  );
+}
+
 const TABS = [
   { key: 'home',   icon: (a: boolean, c: string) => <Ionicons name={a ? 'home' : 'home-outline'} size={24} color={c} /> },
   { key: 'search', icon: (a: boolean, c: string) => <Ionicons name={a ? 'search' : 'search-outline'} size={24} color={c} /> },
-  { key: 'liked',  icon: (a: boolean, c: string) => <Ionicons name={a ? 'heart' : 'heart-outline'} size={24} color={c} /> },
+  { key: 'liked',  icon: (a: boolean, c: string, p: SharedValue<number>) => <AnimatedHeart active={a} color={c} progress={p} /> },
   { key: 'me',     icon: (a: boolean, c: string) => <Ionicons name={a ? 'person' : 'person-outline'} size={24} color={c} /> },
 ];
 

@@ -7,10 +7,14 @@ export interface TabDescriptor {
   /** Stable unique key, also used by onChange. */
   key: string;
   /**
-   * Render the icon. `active` lets you swap filled/outline variants;
-   * `color` is the resolved tint for the current state.
+   * Render the icon.
+   * - `active`: whether this tab is selected — swap filled/outline or trigger a one-shot
+   *   animation (e.g. a Lottie that rings on select) with a `useEffect` on this flag.
+   * - `color`: the resolved tint for the current state.
+   * - `progress`: a 0→1 shared value of how "selected" this tab is (tracks the pill). Drive
+   *   smooth Reanimated animations off `progress.value` (scale, rotate, etc.). Optional to use.
    */
-  icon: (active: boolean, color: string) => ReactNode;
+  icon: (active: boolean, color: string, progress: SharedValue<number>) => ReactNode;
 }
 
 export interface LiquidGlassTabBarProps {
