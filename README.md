@@ -10,12 +10,9 @@ npm install @omarshayya/liquid-glass-tabs
 
 ## Demo
 
-<p align="center">
-  <img src="https://raw.githubusercontent.com/OmarShayya/Liquid-Glass-Navbar-React-Native-Expo/main/media/demo.gif" alt="Liquid Glass Tabs demo" width="320" />
-</p>
-
-> Drop a screen recording at `media/demo.gif` in the repo and it renders here (and on npm).
-> Tip: record the press-hold-drag on the custom bar and the iOS 26 native glass side by side.
+> A demo recording is coming soon. To try it now, run the example app:
+> `cd example && npx expo run:ios` — press-and-hold the pill and drag between tabs, and tap to
+> see icons animate.
 
 ## Features
 
