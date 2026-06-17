@@ -1,11 +1,11 @@
-# @omarshayya/liquid-glass-tabs
+# expo-liquid-glass-tabs
 
 Apple **iOS 26 Liquid Glass** tab bars for **Expo & React Native** — the real native system
 tab bar on iOS, and a gesture-driven custom bar (elastic pill, Telegram-style icon tint,
 scroll-to-minimize) that looks the part on Android too.
 
 ```bash
-npm install @omarshayya/liquid-glass-tabs
+npm install expo-liquid-glass-tabs
 ```
 
 ## Demo
@@ -26,7 +26,7 @@ npm install @omarshayya/liquid-glass-tabs
 ## Install
 
 ```bash
-npm install @omarshayya/liquid-glass-tabs
+npm install expo-liquid-glass-tabs
 # peer dependencies (Expo):
 npx expo install react-native-reanimated react-native-gesture-handler react-native-worklets \
   expo-blur expo-linear-gradient expo-glass-effect expo-haptics \
@@ -57,7 +57,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { useSharedValue } from 'react-native-reanimated';
-import { LiquidGlassTabBar } from '@omarshayya/liquid-glass-tabs';
+import { LiquidGlassTabBar } from 'expo-liquid-glass-tabs';
 
 const TABS = [
   { key: 'home',   icon: (on, c) => <Ionicons name={on ? 'home' : 'home-outline'} size={24} color={c} /> },
@@ -119,7 +119,7 @@ Plain icons that ignore the extra args keep working — animation is fully opt-i
 ### `NativeLiquidGlassTabBar` (real Apple bar) — in an Expo Router `app/(tabs)/_layout.tsx`
 
 ```tsx
-import { NativeLiquidGlassTabBar } from '@omarshayya/liquid-glass-tabs';
+import { NativeLiquidGlassTabBar } from 'expo-liquid-glass-tabs';
 
 export default function TabsLayout() {
   return (
@@ -139,7 +139,7 @@ export default function TabsLayout() {
 
 ```tsx
 import { Ionicons } from '@expo/vector-icons';
-import { LiquidGlassTabs } from '@omarshayya/liquid-glass-tabs';
+import { LiquidGlassTabs } from 'expo-liquid-glass-tabs';
 
 export default function Layout() {
   return (

@@ -1,4 +1,4 @@
-import { NativeLiquidGlassTabBar } from '@omarshayya/liquid-glass-tabs';
+import { NativeLiquidGlassTabBar } from 'expo-liquid-glass-tabs';
 
 export default function NativeDemoLayout() {
   return (

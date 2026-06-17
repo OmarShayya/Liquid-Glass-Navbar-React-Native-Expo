@@ -4,7 +4,7 @@
   "version": "1.0.0",
   "dependencies": {
     "@expo/vector-icons": "^15.0.2",
-    "@omarshayya/liquid-glass-tabs": "file:..",
+    "expo-liquid-glass-tabs": "file:..",
     "@react-native-masked-view/masked-view": "0.3.2",
     "@react-navigation/bottom-tabs": "^7.18.0",
     "expo": "~56.0.11",

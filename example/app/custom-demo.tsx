@@ -8,7 +8,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { LiquidGlassTabBar } from '@omarshayya/liquid-glass-tabs';
+import { LiquidGlassTabBar } from 'expo-liquid-glass-tabs';
 
 // Progress-driven animated icon: scales up + tilts as the tab becomes selected.
 function AnimatedHeart({ active, color, progress }: { active: boolean; color: string; progress: SharedValue<number> }) {
