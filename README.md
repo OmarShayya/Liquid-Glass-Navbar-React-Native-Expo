@@ -43,11 +43,20 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 ## Which component?
 
-| Component | What it is | Platforms | Needs Expo Router |
+| Component | Import from | What it is | Needs Expo Router |
 |---|---|---|---|
-| `LiquidGlassTabBar` | Controlled custom bar (gesture pill + tint + scroll-shrink) | iOS + Android | No |
-| `NativeLiquidGlassTabBar` | Apple's real iOS 26 system Liquid Glass tab bar | iOS (Android → Material) | Yes |
-| `LiquidGlassTabs` | Auto-switch: native bar on iOS, custom bar on Android | iOS + Android | Yes |
+| `LiquidGlassTabBar` | `expo-liquid-glass-tabs` | Controlled custom bar (gesture pill + tint + scroll-shrink). Works with any navigator (React Navigation, etc.) or standalone. | No |
+| `NativeLiquidGlassTabBar` | `expo-liquid-glass-tabs/router` | Apple's real iOS 26 system Liquid Glass tab bar | Yes |
+| `LiquidGlassTabs` | `expo-liquid-glass-tabs/router` | Auto-switch: native bar on iOS, custom bar on Android | Yes |
+
+> **Why two entry points?** The main entry is framework-agnostic and never imports `expo-router`,
+> so apps without it (React Navigation, plain RN) bundle cleanly. The Expo-Router-only components
+> live under `expo-liquid-glass-tabs/router`.
+
+> **Migrating to 0.3.0:** `NativeLiquidGlassTabBar` and `LiquidGlassTabs` moved from the main
+> entry to `expo-liquid-glass-tabs/router`. Update those imports:
+> `import { NativeLiquidGlassTabBar, LiquidGlassTabs } from 'expo-liquid-glass-tabs/router';`
+> `LiquidGlassTabBar` and the rest are unchanged.
 
 ## Usage
 
@@ -70,6 +79,49 @@ function Bar() {
   const scrollY = useSharedValue(0); // optional — enables scroll-to-minimize
   return <LiquidGlassTabBar tabs={TABS} activeKey={active} onChange={setActive} scrollY={scrollY} />;
 }
+```
+
+### With React Navigation (bottom tabs)
+
+`LiquidGlassTabBar` is navigation-agnostic — drop it in as the `tabBar` of
+`@react-navigation/bottom-tabs`. No `expo-router` needed (import from the main entry).
+
+```tsx
+import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
+import { Ionicons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { LiquidGlassTabBar } from 'expo-liquid-glass-tabs';
+
+const ICONS: Record<string, [keyof typeof Ionicons.glyphMap, keyof typeof Ionicons.glyphMap]> = {
+  Chats:    ['chatbubble', 'chatbubble-outline'],
+  Calls:    ['call', 'call-outline'],
+  Settings: ['settings', 'settings-outline'],
+};
+
+function LiquidGlassTabBarAdapter({ state, navigation }: BottomTabBarProps) {
+  const insets = useSafeAreaInsets();
+  const tabs = state.routes.map((r) => ({
+    key: r.name,
+    icon: (on: boolean, c: string) => {
+      const [active, inactive] = ICONS[r.name];
+      return <Ionicons name={on ? active : inactive} size={24} color={c} />;
+    },
+  }));
+  return (
+    <LiquidGlassTabBar
+      tabs={tabs}
+      activeKey={state.routes[state.index].name}
+      onChange={(name) => navigation.navigate(name)}
+      bottomInset={insets.bottom}
+    />
+  );
+}
+
+// MainTabs.tsx
+// <Tab.Navigator screenOptions={{ headerShown: false }}
+//   tabBar={(props) => <LiquidGlassTabBarAdapter {...props} />}>
+//   <Tab.Screen name="Chats" ... />
+// </Tab.Navigator>
 ```
 
 ### Animated icons (selected-state animations)
@@ -119,7 +171,7 @@ Plain icons that ignore the extra args keep working — animation is fully opt-i
 ### `NativeLiquidGlassTabBar` (real Apple bar) — in an Expo Router `app/(tabs)/_layout.tsx`
 
 ```tsx
-import { NativeLiquidGlassTabBar } from 'expo-liquid-glass-tabs';
+import { NativeLiquidGlassTabBar } from 'expo-liquid-glass-tabs/router';
 
 export default function TabsLayout() {
   return (
@@ -139,7 +191,7 @@ export default function TabsLayout() {
 
 ```tsx
 import { Ionicons } from '@expo/vector-icons';
-import { LiquidGlassTabs } from 'expo-liquid-glass-tabs';
+import { LiquidGlassTabs } from 'expo-liquid-glass-tabs/router';
 
 export default function Layout() {
   return (
