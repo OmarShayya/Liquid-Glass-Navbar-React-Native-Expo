@@ -44,4 +44,6 @@ export interface NativeTabDescriptor {
   sf: string;
   /** Material icon name (Android). */
   md: string;
+  /** Optional badge value shown on the tab (e.g. an unread count). */
+  badge?: string;
 }

@@ -180,11 +180,27 @@ export default function TabsLayout() {
       tabs={[
         { name: 'index',   title: 'Home',    sf: 'house.fill',         md: 'home' },
         { name: 'search',  title: 'Search',  sf: 'magnifyingglass',    md: 'search' },
-        { name: 'profile', title: 'Profile', sf: 'person.crop.circle', md: 'person' },
+        { name: 'profile', title: 'Profile', sf: 'person.crop.circle', md: 'person', badge: '3' },
       ]}
     />
   );
 }
+```
+
+**Theming** — all styling props are optional (omit them for the system's automatic theming).
+To honor a **manual** light/dark toggle, set `blurEffect`:
+
+```tsx
+const { colors, isDark } = useTheme();
+
+<NativeLiquidGlassTabBar
+  tabs={[...]}
+  tintColor={colors.primary}          // selected icon/label (accent)
+  iconColor={colors.textSecondary}    // unselected icons
+  blurEffect={isDark ? 'systemThinMaterialDark' : 'systemThinMaterialLight'}
+  labelStyle={{ color: colors.textSecondary }}
+  badgeBackgroundColor={colors.primary}
+/>
 ```
 
 ### `LiquidGlassTabs` (auto-switch per platform) — in an Expo Router `_layout.tsx`
@@ -231,8 +247,14 @@ export default function Layout() {
 
 | Prop | Type | Default | Description |
 |---|---|---|---|
-| `tabs` | `{ name; title; sf; md }[]` | — | `name` matches the route file; `sf`/`md` are SF Symbol / Material icon names. |
+| `tabs` | `{ name; title; sf; md; badge? }[]` | — | `name` matches the route file; `sf`/`md` are SF Symbol / Material icon names; `badge` is an optional badge value (e.g. unread count). |
 | `minimizeBehavior` | `'automatic' \| 'never' \| 'onScrollDown' \| 'onScrollUp'` | `onScrollDown` | Native scroll-minimize. |
+| `tintColor` | `ColorValue` | system | Selected (active) icon/label tint — your accent. |
+| `iconColor` | `ColorValue` | system | Unselected icon color. |
+| `backgroundColor` | `ColorValue` | system | Tab-bar background. |
+| `blurEffect` | `NativeTabsBlurEffect` | system | Glass material; set `'systemThinMaterialDark'`/`'…Light'` to honor a manual dark-mode toggle. |
+| `labelStyle` | `NativeTabsLabelStyle` | system | Label text style (font, size, color). |
+| `badgeBackgroundColor` / `badgeTextColor` | `ColorValue` | system | Badge colors. |
 
 ### `LiquidGlassTabs`
 

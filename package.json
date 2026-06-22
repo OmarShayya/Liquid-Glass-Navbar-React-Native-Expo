@@ -1,6 +1,6 @@
 {
   "name": "expo-liquid-glass-tabs",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Apple iOS 26 Liquid Glass tab bars for Expo & React Native — the real native bar on iOS and a gesture-driven custom bar (elastic pill, Telegram-style tint) on Android.",
   "main": "lib/commonjs/index.js",
   "module": "lib/module/index.js",
